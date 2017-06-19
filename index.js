@@ -89,12 +89,12 @@ AFRAME.registerGeometry('triangleset', {
     var g = this.geometry = getGeometry(data, this.dmaps, true);
     
     g.faceVertexUvs[0] = [];
-      var fs = g.faces ;
-      var _uvs = getUvs( data, g, this.dmaps )
-      
-      fs.forEach( function assignUVs(f, i) {
-        g.faceVertexUvs[0].push( [ _uvs[f.a], _uvs[f.b], _uvs[f.c] ]) ;
-      });
+    var fs = g.faces ;
+    var _uvs = getUvs( data, g, this.dmaps )
+    
+    fs.forEach( function assignUVs(f, i) {
+      g.faceVertexUvs[0].push( [ _uvs[f.a], _uvs[f.b], _uvs[f.c] ]) ;
+    });
 
     g.uvsNeedUpdate = true;
     g.mergeVertices();
