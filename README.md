@@ -26,6 +26,8 @@ This is a custom geometry primitive. All properties are properties of the geomet
 
 - uvs: the list should contain one 2d coordinate pair for each vertex in the vertices list. If no uvs are provided, uvs are assigned based on the two largest dimensions of the bounding box surrounding the vertices.The u coordinate varies from 0 to 1 along the largest dimension, the v coordinate along the second largest.
 
+There is also a corresponding <a-triangleset> primitive available.
+
 ### Installation
 
 #### Browser
@@ -42,6 +44,7 @@ Install and use by directly including the [browser files](dist):
 <body>
   <a-scene>
     <a-entity geometry="primitive: triangleset"></a-entity>
+    <a-triangleset vertices="0 0 -5, 5 0 -5, 5 5 -5, 0 5 -5"></a-triangleset>
   </a-scene>
 </body>
 ```
