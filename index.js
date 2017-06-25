@@ -86,7 +86,7 @@ AFRAME.registerGeometry('triangleset', {
         z: 'y'
       }
     };
-    var g = this.geometry = getGeometry(data, this.dmaps, true);
+    var g = getGeometry(data, this.dmaps, true);
     
     g.faceVertexUvs[0] = [];
     var fs = g.faces ;
@@ -100,111 +100,10 @@ AFRAME.registerGeometry('triangleset', {
     g.mergeVertices();
     g.computeFaceNormals();
     g.computeVertexNormals();
-    g.verticesNeedUpdate = true; // issue #7179, does not work, will need replace vertices			
-  },
-  
-  /**
-   * Called when component is attached and when component data changes.
-   * Generally modifies the entity based on the data.
-   */
-  update: function (previousData) {
-
-    previousData = previousData || {};
-    var data = this.data;
-    //var currentTranslate = previousData.translate || this.schema.translate.default;
-    //var currentVertices = previousData.vertices || this.schema.vertices.default;
-    //var currentTriangles = previousData.triangles || this.schema.triangles.default;
-
-    var diff = AFRAME.utils.diff(previousData, data);
-    var mesh = this.el.getOrCreateObject3D('mesh', THREE.Mesh);
-    var g = this.system.getOrCreateGeometry(data);
-    //var g = mesh.geometry;
-    var geometryNeedsUpdate = !(
-      Object.keys(diff).length === 1 && (
-        'translate' in diff || 'uvs' in diff 
-        )
-      ); // also except uvs only diff
-    var keepMesh = ( 
-      data.vertices.length == g.vertices.length
-      ) && (
-      data.triangles.length == g.faces.length
-      ) ;
-    //var translateNeedsUpdate = !AFRAME.utils.deepEqual(data.translate, currentTranslate);
-    //var facesNeedUpdate = true;
-    var facesNeedUpdate = (
-      data.vertices.length !== g.vertices.length
-      ) || (
-      data.triangles.length !== g.faces.length
-      ) ;
-    var uvsNeedUpdate = 'uvs' in diff || facesNeedUpdate ;
-
-    if ( geometryNeedsUpdate ) {
-      if ( keepMesh ) { updateGeometry( g, data ); }
-      else {
-        this.system.unuseGeometry(previousData);
-        mesh.geometry.dispose(); // hm, old geometry is not gc'ed
-        mesh.geometry = null;
-        var mat = mesh.material;
-        this.geometry = getGeometry(this.data, this.dmaps, facesNeedUpdate);
-        //var bg = new THREE.BufferGeometry().fromGeometry(g);
-        mesh = new THREE.Mesh(g, mat);
-        //mesh.geometry = this.geometry;
-        this.el.setObject3D('mesh', mesh);
-      }
-    }
-
-    //if (translateNeedsUpdate) {
-    //  applyTranslate(g, data.translate, currentTranslate);
-    //}
-
-    if ( uvsNeedUpdate ) {
-      g.faceVertexUvs[0] = [];
-      var fs = g.faces ;
-      var _uvs = getUvs( data, g, this.dmaps )
-      
-      fs.forEach( function assignUVs(f, i) {
-        g.faceVertexUvs[0].push( [ _uvs[f.a], _uvs[f.b], _uvs[f.c] ]) ;
-      });
-
-    g.uvsNeedUpdate = true;
-    }
-
-    if (data.mergeTo) {
-      this.mergeTo(data.mergeTo);
-    }
-
-    g.mergeVertices();
-    g.computeFaceNormals();
-    g.computeVertexNormals();
     g.verticesNeedUpdate = true; // issue #7179, does not work, will need replace vertices
-
-    //if (data.crease) { mesh.material.shading = THREE.FlatShading; };
-    //g.computeBoundingSphere(); // have boundingBox
-
-  },
+    this.geometry = g; 
+  }
   
-  /**
-   * Called when a component is removed (e.g., via removeAttribute).
-   * Generally undoes all modifications to the entity.
-   */
-  //remove: function () { },
-
-  /**
-   * Called on each scene tick.
-   */
-  // tick: function (t) { },
-
-  /**
-   * Called when entity pauses.
-   * Use to stop or remove any dynamic or background behavior such as events.
-   */
-  //pause: function () { },
-
-  /**
-   * Called when entity resumes.
-   * Use to continue or add any dynamic or background behavior such as events.
-   */
-  //play: function () { }
 });
 
 function parseVec3s (value) {
@@ -251,7 +150,6 @@ function updateGeometry (g, data) {
   g.computeBoundingBox();
 }
 
-
 function getGeometry (data, dmaps, facesNeedUpdate) {
   var geometry = new THREE.Geometry();
   
@@ -274,6 +172,7 @@ function getGeometry (data, dmaps, facesNeedUpdate) {
         return [ vtx[xd] + 0, vtx[yd] + 0 ]
       }
     );
+    
     //vertices2d: array of arrays [[2, 4], [5, 6]]
     //triangles: flat array of indices [0, 1, 2,   2, 1, 3 ]
     var triangles = Delaunay.triangulate(vertices2d); // look for a more robust algo
@@ -286,7 +185,12 @@ function getGeometry (data, dmaps, facesNeedUpdate) {
   }
   
   //if (facesNeedUpdate) { geometry.faces = data.triangles; } ;
-  geometry.faces = data.triangles;
+  //clone to preserve hash for cache, and proper removal
+  geometry.faces = data.triangles.map (
+    function clone(face) {
+      return face.clone()
+    } 
+  );
   
   return geometry
 }
