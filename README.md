@@ -5,7 +5,7 @@
 
 A triangleset geometry primitive for [A-Frame](https://aframe.io). This component produces a geometry directly constructed from the provided points. It includes optional triangulation and reasonable default texture coordinate calculations for convenient use. The envisioned use case is for geometries which are not compatible with simple geometric primitives but relatively easy to construct. Another use case is procedural geometry.
 
-### API
+See also [aframe-faceset-component](https://github.com/andreasplesch/aframe-faceset-component) for a regular component.
 
 This is a custom geometry primitive. All properties are properties of the geometry component.
 
